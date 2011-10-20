@@ -2,9 +2,9 @@ require 'inherited_resources'
 require 'active_admin/base_controller/menu'
 
 module ActiveAdmin
-  # BaseController for ActiveAdmin. 
+  # BaseController for ActiveAdmin.
   # It implements ActiveAdmin controllers core features.
-  class BaseController < ::InheritedResources::Base
+  class BaseController < AdminController
     helper ::ActiveAdmin::ViewHelpers
 
     layout 'active_admin'
@@ -13,9 +13,6 @@ module ActiveAdmin
     before_filter :authenticate_active_admin_user
 
     class << self
-      # Ensure that this method is available for the DSL
-      public :actions
-
       # Reference to the Resource object which initialized
       # this controller
       attr_accessor :active_admin_config

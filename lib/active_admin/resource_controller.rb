@@ -1,4 +1,5 @@
 require 'inherited_resources'
+require 'active_admin/admin_controller'
 require 'active_admin/resource_controller/actions'
 require 'active_admin/resource_controller/action_builder'
 require 'active_admin/resource_controller/callbacks'
@@ -11,6 +12,10 @@ module ActiveAdmin
   # All Resources Controller inherits from this controller.
   # It implements actions and helpers for resources.
   class ResourceController < BaseController
+    inherit_resources
+
+    helper ::ActiveAdmin::ViewHelpers
+
     layout :determine_active_admin_layout
 
     respond_to :html, :xml, :json
@@ -35,13 +40,16 @@ module ActiveAdmin
                   :instance_name => config.underscored_resource_name
       end
 
-      # Inherited Resources uses the inherited(base) hook method to 
+      # Inherited Resources uses the inherited(base) hook method to
       # add in the Base.resource_class class method. To override it, we
       # need to install our resource_class method each time we're inherited from.
       def inherited(base)
         super(base)
         base.override_resource_class_methods!
       end
+
+      # Ensure that this method is available for the DSL
+      public :actions
 
       public :belongs_to
     end
