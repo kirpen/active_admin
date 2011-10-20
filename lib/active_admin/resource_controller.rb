@@ -1,4 +1,5 @@
 require 'inherited_resources'
+require 'active_admin/admin_controller'
 require 'active_admin/resource_controller/actions'
 require 'active_admin/resource_controller/action_builder'
 require 'active_admin/resource_controller/callbacks'
@@ -10,8 +11,9 @@ require 'active_admin/resource_controller/page_configurations'
 require 'active_admin/resource_controller/scoping'
 
 module ActiveAdmin
-  class ResourceController < ::InheritedResources::Base
-
+  class ResourceController < AdminController
+    inherit_resources
+    
     helper ::ActiveAdmin::ViewHelpers
 
     layout :determine_active_admin_layout
@@ -20,7 +22,6 @@ module ActiveAdmin
     respond_to :csv, :only => :index
 
     before_filter :only_render_implemented_actions
-    before_filter :authenticate_active_admin_user
 
     ACTIVE_ADMIN_ACTIONS = [:index, :show, :new, :create, :edit, :update, :destroy]
 
@@ -33,21 +34,10 @@ module ActiveAdmin
     include Menu
     include PageConfigurations
     include Scoping
-
+    
     class << self
       # Ensure that this method is available for the DSL
       public :actions
-
-      # Reference to the Resource object which initialized
-      # this controller
-      attr_accessor :active_admin_config
-
-      def active_admin_config=(config)
-        @active_admin_config = config
-        defaults  :resource_class => config.resource,
-                  :route_prefix => config.route_prefix,
-                  :instance_name => config.underscored_resource_name
-      end
 
       public :belongs_to
     end
@@ -70,30 +60,6 @@ module ActiveAdmin
     #       that users can render any template inside Active Admin.
     def determine_active_admin_layout
       ACTIVE_ADMIN_ACTIONS.include?(params[:action].to_sym) ? false : 'active_admin'
-    end
-
-    # Calls the authentication method as defined in ActiveAdmin.authentication_method
-    def authenticate_active_admin_user
-      send(active_admin_application.authentication_method) if active_admin_application.authentication_method
-    end
-
-    def current_active_admin_user
-      send(active_admin_application.current_user_method) if active_admin_application.current_user_method
-    end
-    helper_method :current_active_admin_user
-
-    def current_active_admin_user?
-      !current_active_admin_user.nil?
-    end
-    helper_method :current_active_admin_user?
-
-    def active_admin_config
-      self.class.active_admin_config
-    end
-    helper_method :active_admin_config
-
-    def active_admin_application
-      ActiveAdmin.application
     end
 
     # Returns the renderer class to use for the given action.
