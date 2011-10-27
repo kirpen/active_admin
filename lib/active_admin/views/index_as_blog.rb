@@ -117,7 +117,7 @@ module ActiveAdmin
           end
         else
           h3 do
-            auto_link(post)
+            auto_admin_link(post)
           end
         end
       end
