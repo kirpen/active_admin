@@ -1,5 +1,5 @@
 module ActiveAdmin
-  class ResourceController < ::InheritedResources::Base
+  class ResourceController < AdminController
 
     # Override the InheritedResources actions to use the
     # Active Admin templates.
