@@ -4,7 +4,6 @@ require 'active_admin/resource_controller/actions'
 require 'active_admin/resource_controller/action_builder'
 require 'active_admin/resource_controller/callbacks'
 require 'active_admin/resource_controller/collection'
-require 'active_admin/resource_controller/filters'
 require 'active_admin/resource_controller/scoping'
 require 'active_admin/resource_controller/resource_class_methods'
 
@@ -27,7 +26,6 @@ module ActiveAdmin
     include ActionBuilder
     include Callbacks
     include Collection
-    include Filters
     include Scoping
     extend  ResourceClassMethods
 
@@ -37,7 +35,7 @@ module ActiveAdmin
 
         defaults  :resource_class => config.resource_class,
                   :route_prefix => config.route_prefix,
-                  :instance_name => config.underscored_resource_name
+                  :instance_name => config.resource_name.singular
       end
 
       # Inherited Resources uses the inherited(base) hook method to

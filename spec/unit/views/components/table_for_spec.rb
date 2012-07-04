@@ -3,19 +3,19 @@ require 'spec_helper'
 describe ActiveAdmin::Views::TableFor do
   describe "creating with the dsl" do
 
-    setup_arbre_context!
-
-    let(:assigns){ {} }
-    let(:helpers){ mock_action_view }
-
     let(:collection) do
       [Post.new(:title => "First Post"), Post.new(:title => "Second Post"), Post.new(:title => "Third Post")]
     end
 
+    let(:assigns){ { :collection => collection } }
+    let(:helpers){ mock_action_view }
+
     context "when creating a column with a symbol" do
       let(:table) do
-        table_for(collection) do
-          column :title
+        render_arbre_component assigns, helpers do
+          table_for(collection) do
+            column :title
+          end
         end
       end
 
@@ -36,15 +36,22 @@ describe ActiveAdmin::Views::TableFor do
 
     context "when creating many columns with symbols" do
       let(:table) do
-        table_for(collection) do
-          column :title
-          column :created_at
+        render_arbre_component assigns, helpers do
+          table_for(collection) do
+            column :title
+            column :created_at
+          end
         end
       end
 
       it "should create a table header based on the symbol" do
         table.find_by_tag("th").first.content.should == "Title"
         table.find_by_tag("th").last.content.should == "Created At"
+      end
+      
+      it "should add a class to each table header based on the col name" do
+        table.find_by_tag("th").first.class_list.should include("title")
+        table.find_by_tag("th").last.class_list.should  include("created_at")
       end
 
       it "should create a table row for each element in the collection" do
@@ -54,13 +61,20 @@ describe ActiveAdmin::Views::TableFor do
       it "should create a cell for each column" do
         table.find_by_tag("td").size.should == 6
       end
+      
+      it "should add a class for each cell based on the col name" do
+        table.find_by_tag("td").first.class_list.should include("title")
+        table.find_by_tag("td").last.class_list.should  include("created_at")
+      end
     end
 
     context "when creating a column with block content" do
       let(:table) do
-        table_for(collection) do
-          column :title do |post|
-            span(post.title)
+        render_arbre_component assigns, helpers do
+          table_for(collection) do
+            column :title do |post|
+              span(post.title)
+            end
           end
         end
       end
@@ -76,10 +90,12 @@ describe ActiveAdmin::Views::TableFor do
 
     context "when creating a column with multiple block content" do
       let(:table) do
-        table_for(collection) do
-          column :title do |post|
-            span(post.title)
-            span(post.title)
+        render_arbre_component assigns, helpers do
+          table_for(collection) do
+            column :title do |post|
+              span(post.title)
+              span(post.title)
+            end
           end
         end
       end

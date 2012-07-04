@@ -2,7 +2,6 @@ require 'spec_helper'
 
 describe ActiveAdmin::Views::PaginatedCollection do
   describe "creating with the dsl" do
-    setup_arbre_context!
 
     let(:collection) do
       posts = [Post.new(:title => "First Post"), Post.new(:title => "Second Post"), Post.new(:title => "Third Post")]
@@ -14,9 +13,18 @@ describe ActiveAdmin::Views::PaginatedCollection do
       reload_routes!
     end
 
-    before do
-      request.stub!(:query_parameters).and_return({:controller => 'admin/posts', :action => 'index', :page => '1'})
-      controller.params = {:controller => 'admin/posts', :action => 'index'}
+    let(:view) do
+      view = mock_action_view
+      view.request.stub!(:query_parameters).and_return({:controller => 'admin/posts', :action => 'index', :page => '1'})
+      view.controller.params = {:controller => 'admin/posts', :action => 'index'}
+      view
+    end
+
+    # Helper to render paginated collections within an arbre context
+    def paginated_collection(*args)
+      render_arbre_component({:paginated_collection_args => args}, view) do
+        paginated_collection(*paginated_collection_args)
+      end
     end
 
     context "when specifying collection" do
@@ -44,7 +52,7 @@ describe ActiveAdmin::Views::PaginatedCollection do
       let(:pagination) { paginated_collection(collection, :param_name => :post_page) }
 
       it "should customize the page number parameter in pagination links" do
-        pagination.find_by_tag('div')[1].content.should match(/\/admin\/posts\?post_page=2/)
+        pagination.children.last.content.should match(/\/admin\/posts\?post_page=2/)
       end
     end
 
@@ -150,7 +158,7 @@ describe ActiveAdmin::Views::PaginatedCollection do
     context "when collection comes from find with GROUP BY" do
       let(:collection) do
         %w{Foo Foo Bar}.each {|title| Post.create(:title => title) }
-        Post.group(:title).page(1).per(5)
+        Post.select(:title).group(:title).page(1).per(5)
       end
 
       let(:pagination) { paginated_collection(collection) }
@@ -159,5 +167,35 @@ describe ActiveAdmin::Views::PaginatedCollection do
         pagination.find_by_class('pagination_information').first.content.should == "Displaying <b>all 2</b> posts"
       end
     end
+
+    context "when collection with many pages comes from find with GROUP BY" do
+      let(:collection) do
+        %w{Foo Foo Bar Baz}.each {|title| Post.create(:title => title) }
+        Post.select(:title).group(:title).page(1).per(2)
+      end
+
+      let(:pagination) { paginated_collection(collection) }
+
+      it "should display proper message (including number and not hash)" do
+        pagination.find_by_class('pagination_information').first.content.
+          gsub('&nbsp;',' ').should == "Displaying posts <b>1 - 2</b> of <b>3</b> in total"
+      end
+    end
+
+    context "when viewing the last page of a collection that has multiple pages" do
+      let(:collection) do
+        posts = [Post.new] * 81
+        Kaminari.paginate_array(posts).page(3).per(30)
+      end
+
+      let(:pagination) { paginated_collection(collection) }
+
+      it "should show the proper item counts" do
+        pagination.find_by_class('pagination_information').first.content.
+            gsub('&nbsp;',' ').should == "Displaying posts <b>61 - 81</b> of <b>81</b> in total"
+      end
+    end
+
+
   end
 end

@@ -1,7 +1,7 @@
 module ActiveAdmin
   module Generators
     class InstallGenerator < Rails::Generators::NamedBase
-      desc "Installs Active Admin and generats the necessary migrations"
+      desc "Installs Active Admin and generates the necessary migrations"
       argument :name, :type => :string, :default => "AdminUser"
 
       hook_for :users, :default => "devise", :desc => "Admin user generator to run. Skip with --skip-users"
@@ -23,7 +23,7 @@ module ActiveAdmin
 
       def setup_directory
         empty_directory "app/admin"
-        template 'dashboards.rb', 'app/admin/dashboards.rb'
+        template 'dashboard.rb', 'app/admin/dashboard.rb'
       end
 
       def setup_routes

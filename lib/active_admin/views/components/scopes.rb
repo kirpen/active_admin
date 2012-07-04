@@ -63,11 +63,15 @@ module ActiveAdmin
 
       # Return the count for the scope passed in.
       def get_scope_count(scope)
-        scope_chain(scope, scoping_class).count
+        if params[:q]
+          search(scope_chain(scope, scoping_class)).relation.count
+        else 
+          scope_chain(scope, scoping_class).count
+        end
       end
 
       def scoping_class
-        assigns["before_scope_collection"] || active_admin_config.resource_class
+        assigns[:before_scope_collection] || active_admin_config.resource_class
       end
 
     end
